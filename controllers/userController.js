@@ -6,6 +6,8 @@ const {
     addUsersByMobileNumber,
     fetchUserByIds,
     editUsersProfile,
+    fetchAllCategoryList,
+    listOfSubCategoryByCategoryId,
 
 } = require('../models/usersModel')
 const { msg } = require('../utils/commonMessage')
@@ -34,7 +36,12 @@ exports.userRegister = async (req, res) => {
         );
 
     } catch (error) {
-        res.status(500).json({ status: false, message: 'Failed to send verification', error: error.message });
+        res.status(500).json({
+            status: 500,
+            success: false,
+            message: 'Failed to send verification',
+            error: error.message
+        });
     }
 };
 
@@ -131,7 +138,8 @@ exports.updateUsersProfile = async (req, res) => {
             location: JSON.stringify(location),
             email,
             dob,
-            gender
+            gender,
+            pageCompleted: 1
         }
         let result = await editUsersProfile(obj, userId);
         if (result.affectedRows === 1) {
@@ -193,3 +201,62 @@ exports.fetchProfileById = async (req, res) => {
     }
 };
 
+exports.fetchAllCategory = async (req, res) => {
+    try {
+        let userId = req.user.id
+
+        let result = await fetchAllCategoryList();
+        if (result.length === 0) {
+            return res.status(400).send({
+                success: false,
+                status: 400,
+                message: msg.dataFoundFailed,
+                data: []
+            });
+        }
+        return res.status(200).send({
+            success: true,
+            status: 200,
+            message: msg.dataFoundSuccess,
+            data: result
+        });
+
+    } catch (error) {
+        console.log('>>>>>>error', error);
+        return res.status(500).send({
+            success: false,
+            status: 500,
+            message: msg.serverError
+        });
+    }
+};
+
+exports.fetchSubCategoryByCategoryId = async (req, res) => {
+    try {
+        let userId = req.user.id
+        let { id } = req.query
+        let result = await listOfSubCategoryByCategoryId(id);
+        if (result.length === 0) {
+            return res.status(400).send({
+                success: false,
+                status: 400,
+                message: msg.noSubcategoryFound,
+                data: []
+            });
+        }
+        return res.status(200).send({
+            success: true,
+            status: 200,
+            message: msg.subCategoryFoundSuccess,
+            data: result
+        });
+
+    } catch (error) {
+        console.log('>>>>>>error', error);
+        return res.status(500).send({
+            success: false,
+            status: 500,
+            message: msg.serverError
+        });
+    }
+};

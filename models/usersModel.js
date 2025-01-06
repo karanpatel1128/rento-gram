@@ -28,8 +28,18 @@ exports.addUsersByMobileNumber = async (data) => {
 
 exports.editUsersProfile = async (obj, userId) => {
     const result = await db.query(
-        'UPDATE tbl_users SET fullName = ?,profileImages=?,location=?,email=?,dob=?,gender=? WHERE id = ?',
-        [obj.fullName, obj.profileImages, obj.location, obj.email, obj.dob, obj.gender, userId]
+        'UPDATE tbl_users SET fullName = ?,profileImages=?,location=?,email=?,dob=?,gender=?,pageCompleted=? WHERE id = ?',
+        [obj.fullName, obj.profileImages, obj.location, obj.email, obj.dob, obj.gender, obj.pageCompleted, userId]
     );
+    return result;
+};
+
+exports.fetchAllCategoryList = async () => {
+    const result = await db.query('SELECT * FROM tbl_category ORDER BY createdAt DESC');
+    return result;
+};
+
+exports.listOfSubCategoryByCategoryId = async (id) => {
+    const result = await db.query('SELECT * FROM tbl_subcategory WHERE categoryId = ?', [id]);
     return result;
 };

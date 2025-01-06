@@ -1,4 +1,4 @@
-const { body,validationResult  } = require('express-validator');
+const { body, validationResult } = require('express-validator');
 
 const userValidation = [
     body('fullName')
@@ -32,16 +32,20 @@ const userValidation = [
         })
 ];
 
-const errorHandler = (req, res, next) => {
+// Middleware function to handle validation errors
+const handleValidationErrors = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        const errorMessages = errors.array().map((error) => error.msg);  // Extract only `msg`
-        return res.status(400).json({
+        return res.status(400).send({
             success: false,
-            errors: errorMessages,
+            message: errors.errors[0].msg
         });
     }
     next();
 };
 
-module.exports = { userValidation,errorHandler };
+// Exporting validation rules and error handling middleware
+module.exports = {
+    userValidation,
+    handleValidationErrors
+}

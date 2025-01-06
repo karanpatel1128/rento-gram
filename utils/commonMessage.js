@@ -11,5 +11,15 @@ exports.msg = {
     profileUpdatedSuccessfully: 'Profile updated successfully',
     profileUpdatedFailed: 'Profile not updated',
     dataFoundSuccess: "Data found successfully.",
-    dataFoundFailed: "Data not found. Please try again."
+    dataFoundFailed: "Data not found. Please try again.",
+    productAddFailed: 'Failed to add product',
+    productAddSuccess: 'Product added successfully',
+    productNotFound: "No products found. Please add products to view them here.",
+    productFoundSuccess: "Products retrieved successfully.",
+    productAlreadyRent: "This product is already rented, so editing and delete is not allowed until it becomes available.",
+    productUpdateSuccess: "Product updated successfully.",
+    productUpdateFailed: "No product was updated. Please check the product ID or the provided data.",
+    productDeleteSuccess: "products deleted successfully.",
+    noSubcategoryFound: "No subcategory found for the given category.",
+    subCategoryFoundSuccess: "Subcategories retrieved successfully."
 };

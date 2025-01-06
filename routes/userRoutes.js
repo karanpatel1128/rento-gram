@@ -3,7 +3,7 @@ const { userController } = require('../controllers/index');
 const router = express.Router();
 const { uploadSingle } = require('../middleware/upload');
 const { userAuth } = require('../middleware/auth');
-const { userValidation, errorHandler } = require('../vallidations/userVallidations');
+const { userValidation, handleValidationErrors } = require('../vallidations/userVallidations');
 
 
 
@@ -19,9 +19,13 @@ const { userValidation, errorHandler } = require('../vallidations/userVallidatio
 
 router.post('/signup', userController.userRegister);
 router.post('/otpVerify', userController.otpVerifyFn);
-router.post('/updateProfile', userAuth, uploadSingle, userController.updateUsersProfile);
+router.post('/updateProfile', userAuth, userValidation, handleValidationErrors, uploadSingle, userController.updateUsersProfile);
 router.get('/fetchProfileById', userAuth, userController.fetchProfileById);
 
+// ------------------category----------------------------------------//
+
+router.get('/fetchAllCategory', userAuth, userController.fetchAllCategory);
+router.get('/fetchSubCategoryByCategoryId', userAuth, userController.fetchSubCategoryByCategoryId);
 
 
 
