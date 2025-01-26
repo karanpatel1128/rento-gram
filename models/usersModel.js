@@ -43,3 +43,50 @@ exports.listOfSubCategoryByCategoryId = async (id) => {
     const result = await db.query('SELECT * FROM tbl_subcategory WHERE categoryId = ?', [id]);
     return result;
 };
+
+exports.fetchAllSubCategoryList = async () => {
+    const result = await db.query('SELECT * FROM tbl_subcategory');
+    return result;
+};
+
+exports.fetchOnlyOtherUsersProducts = async (userId, search) => {
+    const result = await db.query(
+        `SELECT 
+            tbl_products.id,
+            title,
+            descriptions,
+            keyNote,
+            location,
+            productsImages,
+            categoryName,
+            subcategoryName,
+            tbl_products.depositeAmount,
+            tbl_products.rentDayPrice,
+            tbl_category.id as category,
+            tbl_subcategory.id as subCategory
+        FROM 
+            tbl_products
+        LEFT JOIN 
+            tbl_category 
+        ON 
+            tbl_category.id = tbl_products.category
+        LEFT JOIN 
+            tbl_subcategory 
+        ON 
+            tbl_subcategory.id = tbl_products.subCategory
+        WHERE 
+            isRent = 0 
+            AND productStatus = 1 
+            AND userId != ? 
+            ${search ? `AND (
+                title LIKE ? OR 
+                descriptions LIKE ? OR 
+                keyNote LIKE ? OR 
+                categoryName LIKE ? OR 
+                subcategoryName LIKE ?
+            )` : ''}`,
+        search ? [userId, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`] : [userId]
+    );
+    return result;
+};
+

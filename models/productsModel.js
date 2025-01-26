@@ -1,12 +1,19 @@
 const db = require('../config/db')
 
 exports.fetchProductByProductId = async (id) => {
-    const result = await db.query('SELECT * FROM tbl_products WHERE id  = ?', [id]);
+    const result = await db.query(
+        'SELECT *,tbl_category.categoryName FROM tbl_products LEFT JOIN tbl_category ON tbl_products.category = tbl_category.id WHERE tbl_products.id = ?',
+        [id]
+    );
     return result;
 };
 
+
 exports.fetchAllProducts = async (id) => {
-    const result = await db.query('SELECT * FROM tbl_products WHERE userId  = ?', [id]);
+    const result = await db.query(`SELECT tbl_products.*,tbl_category.categoryName,tbl_subcategory.subcategoryName FROM tbl_products
+         LEFT JOIN tbl_category ON tbl_products.category = tbl_category.id 
+         LEFT JOIN tbl_subcategory ON tbl_products.subCategory = tbl_subcategory.id 
+         WHERE userId  = ?`, [id]);
     return result;
 };
 
@@ -23,11 +30,12 @@ exports.addProduct = async (data) => {
             size,
             depositeAmount, 
             rentDayPrice, 
-            ThreeDayDiscount, 
-            sevenDayDiscount, 
+            isDepositeNegotiable, 
+            isRentNegotiable,
+            tags, 
             productsImages, 
             productStatus
-        ) VALUES (?, ?,?,? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?,?,? ,?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?)`,
         [
             data.userId,
             data.title,
@@ -39,8 +47,9 @@ exports.addProduct = async (data) => {
             data.size,
             data.depositeAmount,
             data.rentDayPrice,
-            data.ThreeDayDiscount,
-            data.sevenDayDiscount,
+            data.isDepositeNegoitable,
+            data.isRentNegoitable,
+            data.tags,
             data.productsImages,
             data.productStatus
         ]

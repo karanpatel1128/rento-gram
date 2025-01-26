@@ -20,6 +20,8 @@ exports.msg = {
     productUpdateSuccess: "Product updated successfully.",
     productUpdateFailed: "No product was updated. Please check the product ID or the provided data.",
     productDeleteSuccess: "products deleted successfully.",
-    noSubcategoryFound: "No subcategory found for the given category.",
-    subCategoryFoundSuccess: "Subcategories retrieved successfully."
+    noSubcategoryFoundForGivenCategoryId: "No subcategory found for the given category.",
+    subCategoryFoundSuccess: "Subcategories retrieved successfully.",
+    noSubcategoryFound: "No subcategories found."
+
 };

@@ -19,13 +19,19 @@ const { userValidation, handleValidationErrors } = require('../vallidations/user
 
 router.post('/signup', userController.userRegister);
 router.post('/otpVerify', userController.otpVerifyFn);
-router.post('/updateProfile', userAuth, userValidation, handleValidationErrors, uploadSingle, userController.updateUsersProfile);
+router.post('/updateProfile', userAuth, uploadSingle, userValidation, handleValidationErrors, userController.updateUsersProfile);
 router.get('/fetchProfileById', userAuth, userController.fetchProfileById);
 
 // ------------------category----------------------------------------//
 
 router.get('/fetchAllCategory', userAuth, userController.fetchAllCategory);
 router.get('/fetchSubCategoryByCategoryId', userAuth, userController.fetchSubCategoryByCategoryId);
+
+// --------------------search products----------------------------------------//
+
+router.get('/searchProductsList', userAuth, userController.searchProductsList);
+
+
 
 
 

@@ -13,6 +13,7 @@ const jwt = require('jsonwebtoken');
 const secretKey = process.env.SECRET_KEY;
 const { baseUrl } = require('../config/path');
 const { log } = require('util');
+const { fetchAllCategory } = require('./userController');
 
 
 // --------------users can host there products-------------------------
@@ -29,8 +30,9 @@ exports.createProducts = async (req, res) => {
             size,
             depositeAmount,
             rentDayPrice,
-            ThreeDayDiscount,
-            sevenDayDiscount
+            isDepositeNegoitable,
+            isRentNegoitable,
+            tags
         } = req.body;
         let files = req.files;
         let productsImages = [];
@@ -48,8 +50,9 @@ exports.createProducts = async (req, res) => {
             size,
             depositeAmount,
             rentDayPrice,
-            ThreeDayDiscount,
-            sevenDayDiscount,
+            isDepositeNegoitable,
+            isRentNegoitable,
+            tags: JSON.stringify(tags),
             productsImages: JSON.stringify(productsImages),
             productStatus: 0
         }
@@ -80,11 +83,10 @@ exports.createProducts = async (req, res) => {
     }
 };
 
-// //--------------- Function to fetch all products by users id ------------------
+//--------------- Function to fetch all products by users id ------------------
 exports.fetchAllProductsByUsersId = async (req, res) => {
     try {
         let userId = req.user.id
-
         let result = await fetchAllProducts(userId)
         if (result.length === 0) {
             return res.status(400).send({
@@ -95,11 +97,13 @@ exports.fetchAllProductsByUsersId = async (req, res) => {
             })
         }
         result.map(async (item) => {
+            let formattedTags = item.tags.replace(/[\[\]]/g, '').split(',').map(tag => tag.trim().replace(/^["']|["']$/g, ''));
+            item.tags = formattedTags;
             if (item.productsImages) {
                 let images = JSON.parse(item.productsImages);
                 item.productsImages = images.map(image => `${baseUrl}/uploads/${image}`);
             } else {
-                item.productsImages = null;
+                item.productsImages = [];
             }
             return item;
         })
@@ -119,7 +123,7 @@ exports.fetchAllProductsByUsersId = async (req, res) => {
     }
 };
 
-// // --------------Function fetch products by there ids------------------------------
+// --------------Function fetch products by there ids------------------------------
 exports.fetchProductByProductId = async (req, res) => {
     try {
         let userId = req.user.id
@@ -133,8 +137,6 @@ exports.fetchProductByProductId = async (req, res) => {
                 data: []
             });
         }
-        console.log('result[0]', result[0]);
-
         let productsImg = result[0].productsImages == null ? null : JSON.parse(result[0].productsImages)
         result[0].productsImages = productsImg.map(image => `${baseUrl}/uploads/${image}`);
         return res.status(200).send({
@@ -156,21 +158,7 @@ exports.fetchProductByProductId = async (req, res) => {
 
 exports.editProducts = async (req, res) => {
     try {
-        let userId = req.user.id
         const productId = req.params.productId;
-        let {
-            title,
-            descriptions,
-            keyNote,
-            location,
-            category,
-            subCategory,
-            size,
-            depositeAmount,
-            rentDayPrice,
-            ThreeDayDiscount,
-            sevenDayDiscount
-        } = req.body
         let result = await fetchProductByProductId(productId);
         if (result.length === 0) {
             return res.status(400).send({
@@ -196,7 +184,6 @@ exports.editProducts = async (req, res) => {
         req.body.productsImages = productsImages
         req.body.productStatus = 0
         let editProductById = await editProducts(req.body, productId);
-
         if (editProductById.affectedRows === 1) {
             return res.status(200).send({
                 success: true,

@@ -1,5 +1,4 @@
 require('dotenv').config();
-const { json } = require('body-parser');
 const {
     fetchUserByMobileNumber,
     findExistsUserFcmToken,
@@ -7,7 +6,9 @@ const {
     fetchUserByIds,
     editUsersProfile,
     fetchAllCategoryList,
+    fetchAllSubCategoryList,
     listOfSubCategoryByCategoryId,
+    fetchOnlyOtherUsersProducts,
 
 } = require('../models/usersModel')
 const { msg } = require('../utils/commonMessage')
@@ -15,6 +16,8 @@ const jwt = require('jsonwebtoken');
 const secretKey = process.env.SECRET_KEY;
 const { baseUrl } = require('../config/path');
 const { log } = require('util');
+const { haversineDistance } = require('../utils/helper')
+
 
 
 // --------------user register with there mobile number-------------------------
@@ -65,7 +68,7 @@ exports.otpVerifyFn = async (req, res) => {
             const token = jwt.sign(
                 { userId: checkUser[0].id, mobileNumber },
                 secretKey,
-                { expiresIn: '1h' }
+                { expiresIn: '24h' }
             );
             let obj = {
                 gender: checkUser[0].gender || null,
@@ -169,6 +172,7 @@ exports.updateUsersProfile = async (req, res) => {
 exports.fetchProfileById = async (req, res) => {
     try {
         let userId = req.user.id
+        console.log('userId', userId);
 
         let result = await fetchUserByIds(userId);
         if (result.length === 0) {
@@ -179,8 +183,10 @@ exports.fetchProfileById = async (req, res) => {
                 data: []
             });
         }
+        console.log('result.location>>>>>>.', result[0].location);
+
         result.map((item) => {
-            item.location = JSON.parse(item.location.replace(/\\|"/g, ''))
+            // item.location = JSON.parse(item.location.replace(/\\|"/g, ''))
             item.profileImages = item.profileImages ? `${baseUrl}/uploads/${item.profileImages}` : null
             return item
         })
@@ -209,7 +215,7 @@ exports.fetchAllCategory = async (req, res) => {
         if (result.length === 0) {
             return res.status(400).send({
                 success: false,
-                status: 400,
+                status: 200,
                 message: msg.dataFoundFailed,
                 data: []
             });
@@ -233,13 +239,12 @@ exports.fetchAllCategory = async (req, res) => {
 
 exports.fetchSubCategoryByCategoryId = async (req, res) => {
     try {
-        let userId = req.user.id
         let { id } = req.query
-        let result = await listOfSubCategoryByCategoryId(id);
+        let result = id ? await listOfSubCategoryByCategoryId(id) : await fetchAllSubCategoryList();
         if (result.length === 0) {
             return res.status(400).send({
                 success: false,
-                status: 400,
+                status: 200,
                 message: msg.noSubcategoryFound,
                 data: []
             });
@@ -249,6 +254,47 @@ exports.fetchSubCategoryByCategoryId = async (req, res) => {
             status: 200,
             message: msg.subCategoryFoundSuccess,
             data: result
+        });
+    } catch (error) {
+        console.log('>>>>>>error', error);
+        return res.status(500).send({
+            success: false,
+            status: 500,
+            message: msg.serverError
+        });
+    }
+};
+
+exports.searchProductsList = async (req, res) => {
+    try {
+        let { search } = req.query
+        let userId = req.user.id
+        let result = await fetchUserByIds(userId);
+        let fetchUserlatLong = [];
+        let loc = result[0].location
+        fetchUserlatLong = JSON.parse(loc.replace(/"/g, ''));
+        let data = await fetchOnlyOtherUsersProducts(userId, search)
+        let filteredData = [];
+        if (data.length > 0) {
+            filteredData = await Promise.all(data.filter(async (item) => {
+                let img = item.productsImages ? JSON.parse(item.productsImages) : []
+                item.productsImages = img.length > 0 ? img.map((i) => {
+                    return i = `${baseUrl}/upload/${i}`
+                }) : []
+                if (item.location) {
+                    let productLocation = JSON.parse(item.location.replace(/"/g, ''));
+                    let distance = await haversineDistance(fetchUserlatLong, productLocation);
+                    return distance <= 10;
+                }
+                return item;
+            })
+            );
+        }
+        return res.status(200).send({
+            success: true,
+            status: 200,
+            message: msg.dataFoundSuccess,
+            data: filteredData
         });
 
     } catch (error) {

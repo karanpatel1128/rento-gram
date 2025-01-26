@@ -18,7 +18,7 @@ const { productValidation, handleValidationErrors } = require('../vallidations/p
  * */
 
 router.post('/createProducts', userAuth, uploadMultiple, productValidation, handleValidationErrors, productController.createProducts);
-router.get('/fetchAllProducts', userAuth, productController.fetchAllProductsByUsersId);
+router.get('/fetchProductsByUserId', userAuth, productController.fetchAllProductsByUsersId);
 router.get('/fetchProductByProductId', userAuth, productController.fetchProductByProductId);
 router.post('/editProduct/:productId', userAuth, uploadMultiple, productController.editProducts);
 router.delete('/deleteUserProducts/:productId', userAuth, productController.deleteUserProducts);

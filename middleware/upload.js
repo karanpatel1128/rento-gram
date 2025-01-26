@@ -1,3 +1,4 @@
+const { log } = require('console');
 const multer = require('multer');
 const path = require('path');
 
@@ -15,12 +16,26 @@ const storage = multer.diskStorage({
 
 // File filter function
 function fileFilter(req, file, cb) {
-    // Allowed file types for images and videos
+    const allowedMimeTypes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/gif',
+        'video/mp4',
+        'video/mov',
+        'video/avi',
+        'video/mkv',
+        'application/octet-stream', 
+    ];
+    // const fileTypes = /.+\..+/;
     const fileTypes = /jpeg|jpg|png|gif|mp4|mov|avi|mkv/;
     const extname = fileTypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = fileTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
+    console.log('extname',extname);
+    
+    const mimetype = allowedMimeTypes.includes(file.mimetype);
+    console.log('mimetype',mimetype);
+    
+    if (extname && mimetype) {
         return cb(null, true);
     } else {
         cb(new Error('Only images and videos are allowed'));
