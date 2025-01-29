@@ -6,6 +6,7 @@ const path = require("path");
 const route = require('./routes/indexRoutes');
 require('dotenv').config();
 const app = express();
+const server = http.createServer(app);
 
 // Middleware setup
 app.use(cors());
@@ -14,6 +15,8 @@ app.set('view', path.join(__dirname, 'view'));
 app.use(express.static("public"));
 app.use(bodyParser.json());
 
+const initializeSocket = require("./utils/socket");
+const io = initializeSocket(server);
 
 // Use routes
 app.use('/api', route);

@@ -90,3 +90,23 @@ exports.fetchOnlyOtherUsersProducts = async (userId, search) => {
     return result;
 };
 
+exports.fetchUsersChatsWithId = async (userId) => {
+    return await db.query(`SELECT * FROM tbl_users WHERE id = ${userId}`)
+};
+
+exports.insertUsersSocketId = async (socketId, userId) => {
+    return await db.query(`
+        UPDATE tbl_users 
+        SET socket_id = '${socketId}' 
+        WHERE id = ${userId}
+    `);
+};
+
+
+exports.fetchMessagesById= async (messageId) => {
+    return await db.query(`SELECT * FROM message WHERE id = ${messageId} ORDER BY createdAt DESC`)
+};
+
+exports.fetchChatsWithId= async (chatId) => {
+    return await db.query(`SELECT * FROM chat WHERE id = ${chatId} ORDER BY createdAt DESC`)
+};
